@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="tinymce/tinymce.min.js"></script>
+    <title>Lodówka</title>
+    <style>
+        body{
+            height:100vh;
+            background: rgb(239, 255, 217);
+        }
+        #add {
+            background: none;
+            border: none;
+            width: 50px;
+            height: 50px;
+        }
+        #edytowany {
+            background-color: #F5ECD0;
+        }
+        .magnet {
+            width: 100px;
+            height: 130px;
+            border: solid 1px;
+            position: absolute;
+            background-color: white;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+        .zamknij {
+            float: right;
+            width: 15px;
+            height: 15px;
+            background-image: url('img/close.png');
+        }
+        .zmiana_res {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 15px;
+            height: 15px;
+            background-image: url("img/res.gif");
+        }
+        .add_txt {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-image: url("img/pen.gif");
+        }
+        #mceu_13 {
+            width: 400px;
+            height: 100px;
+        }
+        #close {
+            position: absolute;
+            left: 85%;
+            bottom: -130px;
+            border: 1px solid;
+            background-color: #D3D3FA;
+            color: white;
+        }
+        #zapisz {
+            position: absolute;
+            left: 73%;
+            bottom: -130px;
+            border: 1px solid;
+            background-color: #D3D3FA;
+            color: white;
+        }
+        #add img {
+            width: 50px;
+            height: 50px;
+        }
+        #mceu_13 {
+            position: absolute;
+            right: 2%;
+            top: 2%;
+        }
+        #drag_box{
+            position:absolute;
+            background-color: rgba(132, 132, 238, 0.20);
+			z-index:999999;
+        }
+    </style>
+    <script>
+//ZMIENNE "WOLNE"-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        var wartosc_index = 1;
+        var ile_kartek = 1;
+        var ile_kartek2 = 0;
+//info--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        alert("By zaznaczyć i przesunąć wiele elementów: Shift + click na kartkę.\nBy znikło zaznaczenie DOUBLECLICK na body..... \nALT + MOUSEDOWN zaznaczenie za pomocą pudełka.");
+//MAIN--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        function _Magnet() {
+            this.html_element = null;
+            this.create = function () {
+                ile_kartek2++;
+                var div = document.createElement("div");
+                div.className = "magnet";
+                div.style.zIndex = wartosc_index;
+//ilosc kartek------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                document.getElementById("ile").innerHTML = "Ilość kartek: " + ile_kartek;
+                document.getElementById("ile2").innerHTML = "Ilość kartek obecnie: " + ile_kartek2;
+//DYNAMICZNIE TWORZENIE---------------------------------------------------------------------------------------------------------------------------------------------------------------
+                var usun_karteczka = document.createElement("div");
+                usun_karteczka.className = "zamknij";
+                div.appendChild(usun_karteczka);
+
+                var zmien = document.createElement("div")
+                zmien.classList.add('zmiana_res')
+                div.appendChild(zmien)
+
+                var add_txt = document.createElement("div");
+                add_txt.classList.add('add_txt');
+                div.appendChild(add_txt);
+
+                var textarea = document.createElement("p");
+                textarea.id = "textarea"
+                div.appendChild(textarea);
+                textarea.innerHTML = "new magnes";
+//usun_karteczkę-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                usun_karteczka.addEventListener("click", function () {
+                    div.remove();
+                    document.getElementById("mceu_13").style.display = "none";
+                    ile_kartek2--;
+                    document.getElementById("ile2").innerHTML = "Ilość kartek obecnie: " + ile_kartek2;
+                })
+//IndexDiv-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                div.addEventListener("mousedown", function () {
+                    var max = fridge.collection.length;
+                    for (var i = 0; i < fridge.collection.length; i++) {
+                        if (fridge.collection[i].html_element.style.zIndex > this.style.zIndex) {
+                            console.log(fridge.collection[i].html_element.style.zIndex, this.style.zIndex)
+                            fridge.collection[i].html_element.style.zIndex = fridge.collection[i].html_element.style.zIndex - 1;
+                        }
+                    }
+                    this.style.zIndex = max;
+                    this.style.backgroundColor = "#F5ECD0";
+                });
+                div.style.zIndex = wartosc_index;
+//DEFAULT_COLOR
+                /*zmiana na kolor biały tła jeśli nie posiada klasy zaznaczenia*/
+                div.addEventListener("mouseup", function () {
+                    if (div.classList.contains("multiSelect") == false)
+                        this.style.backgroundColor = "white";
+                });
+//MULTIPLE-SELECT-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                div.addEventListener("click", function (e) {
+                    /*SHIFT + CLICK zaznaczenie po kolei kartek jak w windowsie ctrl +click*/
+                    if (e.shiftKey) {
+                        if (div.classList.contains("multiSelect") == false) {
+                            div.classList.add('multiSelect');
+                            div.style.backgroundColor = "rgb(245,236,208)";
+                        }
+                        else {
+                            div.classList.remove('multiSelect');
+                            div.style.backgroundColor = "white";
+                        }
+                    }
+                });
+                var bdy = document.getElementsByTagName("body")[0];
+                /*pozbycie sie multizaznaczenia*/
+                bdy.addEventListener("dblclick", function () {
+                    console.log(bdy)
+                    if (div.classList.contains("multiSelect") == true) {
+                        div.classList.remove('multiSelect');
+                        div.style.backgroundColor = "white";
+                    }
+                });
+//DRAG_BOX--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------         
+                /*Trafienie na kant, ogólne zderzenie drag boxa z magnesem*/
+				checkBoxCollision = function(drag_box, div) {
+            		drag_box.offsetBottom = drag_box.offsetTop + drag_box.offsetHeight;
+					drag_box.offsetRight = drag_box.offsetLeft + drag_box.offsetWidth;
+					div.offsetBottom = div.offsetTop + div.offsetHeight;
+					div.offsetRight = div.offsetLeft + div.offsetWidth;
+					
+					return !((drag_box.offsetBottom < div.offsetTop) ||
+							 (drag_box.offsetTop > div.offsetBottom) ||
+							 (drag_box.offsetRight < div.offsetLeft) ||
+							 (drag_box.offsetLeft > div.offsetRight))
+				};
+
+                bdy.addEventListener("mousedown", function (e) {
+                    /*Tworzenie drag boxa*/
+                        var x = e.clientX;
+                        var y = e.clientY;
+                        var drag_box = document.createElement("div");
+                        drag_box.style.left=x+"px"
+                        drag_box.style.top=y+"px"
+                        drag_box.id="drag_box";
+                        bdy.appendChild(drag_box);
+                    /*Rysowanie na zasadzie funkcji resize*/
+                    if (e.altKey) {
+                        var fx = e.clientX - drag_box.offsetWidth
+                        var fx2 = e.clientY - drag_box.offsetHeight
+                        e.stopPropagation();
+                        var zaznacz = function (e) {
+                            console.log("move");
+                            var x = e.clientX;
+                            var y = e.clientY;
+                            drag_box.style.width = x - fx + "px";
+                            drag_box.style.height = y - fx2 + "px";
+							/*Nadanie klasy multizaznaczenia podczas "kolizji"*/
+							if (checkBoxCollision(drag_box, div) == true) {
+								div.classList.add('multiSelect');
+								div.style.backgroundColor = "rgb(245,236,208)";
+							}
+							else {
+								div.classList.remove('multiSelect');
+								div.style.backgroundColor = "white";
+							}
+                        }
+                        document.body.addEventListener("mousemove", zaznacz);
+                        up2 = function () {
+                            document.body.removeEventListener("mousemove", zaznacz);
+                            drag_box.remove()
+                        }
+                        document.body.addEventListener("mouseup", up2);
+                    }
+                });
+
+//MOVE-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                div.addEventListener("mousedown", function (e) {
+                    /*Jeśli nie ma multiselecta funkcja move nr1*/
+                    if (div.classList.contains("multiSelect") == false) {
+                        var dx = e.clientX - div.offsetLeft
+                        var dx2 = e.clientY - div.offsetTop
+                        var move = function (e) {
+                            console.log("move");
+                            var x = e.clientX;
+                            var y = e.clientY;
+                            div.style.left = x - dx + "px";
+                            div.style.top = y - dx2 + "px";
+                        }
+                        document.body.addEventListener("mousemove", move);
+                        up = function () {
+                            document.body.removeEventListener("mousemove", move);
+                        }
+                        document.body.addEventListener("mouseup", up);
+                    }
+                    else {
+                        /*Jeśli jest multiselect funkcja move nr2*/
+                        var msCount = document.getElementsByClassName('multiSelect');
+                        [].forEach.call(msCount, function (msElement) {
+                            var dx = e.clientX - msElement.offsetLeft
+                            var dx2 = e.clientY - msElement.offsetTop
+                            var move = function (e) {
+                                console.log("move");
+                                var x = e.clientX;
+                                var y = e.clientY;
+                                msElement.style.left = x - dx + "px";
+                                msElement.style.top = y - dx2 + "px";
+                            }
+                            document.body.addEventListener("mousemove", move);
+                            up = function () {
+                                document.body.removeEventListener("mousemove", move);
+                            }
+                            document.body.addEventListener("mouseup", up);
+                        });
+                    }
+                });
+                this.html_element = div;
+                document.body.appendChild(div);
+//RESIZE----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                zmien.addEventListener("mousedown", function (e) {
+                    div.style.backgroundColor = "#F5ECD0";
+                    var fx = e.clientX - div.offsetWidth
+                    var fx2 = e.clientY - div.offsetHeight
+                    e.stopPropagation();
+                    var resize = function (e) {
+                        console.log("move");
+                        var x = e.clientX;
+                        var y = e.clientY;
+                        div.style.width = x - fx + "px";
+                        div.style.height = y - fx2 + "px";
+                    }
+                    document.body.addEventListener("mousemove", resize);
+                    up = function () {
+                        document.body.removeEventListener("mousemove", resize);
+                    }
+                    document.body.addEventListener("mouseup", up);
+                    
+                });
+
+//WYSIWYG-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                add_txt.addEventListener("click", function () {
+                    div.style.backgroundColor = "#F5ECD0";
+                    console.log("WYSIWYG");
+
+                    var element = this.parentNode;
+                    element.id = "edytowany";                                 //kinda magic
+                    var c = document.getElementById("edytowany").childNodes;  //Po prostu szukam id po którym ustalałem który to był magnes 
+                    var elemento = c[3].innerHTML;                              
+
+                    tinymce.activeEditor.setContent(elemento);
+                    document.getElementById("mceu_13").style.display = "block";
+                    document.getElementById("texteditor").style.display = "block";
+
+                    var close = document.createElement("button");
+                    close.id = "close";
+                    close.innerHTML = "zamknij"
+                    document.getElementById("mceu_13").appendChild(close);
+//ZAMKNIJ_WYSIWYG------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                    close.addEventListener("click", function () {
+                        document.getElementById("mceu_13").style.display = "none";
+                        document.getElementById("texteditor").style.display = "none";
+                        element.id = "";
+                        div.style.backgroundColor = "white";
+                    });
+//ZAPISZ_WYSIWYG------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                    var zapisz = document.createElement("button");
+                    zapisz.id = "zapisz";
+                    zapisz.innerHTML = "zapisz";
+                    document.getElementById("mceu_13").appendChild(zapisz);
+
+                    zapisz.addEventListener("click", function () {
+                        console.log("zapisz")
+                        var dzieci = document.getElementById('edytowany').childNodes; //Po prostu szukam id po którym ustalałem który to był magnes 
+                        var elemento = dzieci[3];
+                        var content_tiny = tinymce.activeEditor.getContent();
+                        elemento.innerHTML = content_tiny;
+                        div.style.backgroundColor = "#F5ECD0";
+                    });
+                });
+            }
+            this.create();
+            wartosc_index++;
+            ile_kartek++;
+        }
+//FRIDGE--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        document.addEventListener("DOMContentLoaded", function (event) {
+
+            var texteditor = document.createElement("div");
+            texteditor.id = "texteditor"
+            texteditor.style.display = "none";
+            document.body.appendChild(texteditor);
+
+            tinymce.init({ selector: '#texteditor' });
+
+            fridge = {
+                collection: [],
+                add: function () {
+                    this.collection.push(new _Magnet());
+                }
+            }
+        })
+    </script>
+</head>
+
+<body>
+    <button onclick="fridge.add()" id="add"><img src="img/add-file.png" alt="dodaj"/></button>
+    <p id="ile">Ilość kartek: 0</p>
+    <p id="ile2">Ilość kartek obecnie: 0</p>
+</body>
+<!-- WKLEJTO.PL/318155-->
+
+</html>
